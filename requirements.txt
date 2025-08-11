@@ -1,0 +1,4 @@
+crewai
+speechrecognition
+coqui-tts
+pydantic

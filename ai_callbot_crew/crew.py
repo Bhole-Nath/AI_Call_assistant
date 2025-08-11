@@ -3,6 +3,7 @@ from crewai.project import CrewBase, agent, crew, task
 from crewai.agents.agent_builder.base_agent import BaseAgent
 from typing import List
 
+from tools.custom_tools import STTTool, DataExtractorTool, TTSTool
 
 @CrewBase
 class AiCallbotCrew():
@@ -16,7 +17,7 @@ class AiCallbotCrew():
         return Agent(
             config=self.agents_config['STT_Agent'], # type: ignore[index]
             verbose=True,
-            tools=[SerperDevTool()]
+            tools=[STTTool()]
         )
 
     @agent
@@ -24,7 +25,7 @@ class AiCallbotCrew():
         return Agent(
             config=self.agents_config['LLM_Agent'], # type: ignore[index]
             verbose=True,
-            tools=[SerperDevTool()]
+            tools=[]
         )
     
     @agent
@@ -32,7 +33,7 @@ class AiCallbotCrew():
         return Agent(
             config=self.agents_config['Data_Extractor_Agent'], # type: ignore[index]
             verbose=True,
-            tools=[SerperDevTool()]
+            tools=[DataExtractorTool()]
         )
     
     @agent
@@ -40,7 +41,7 @@ class AiCallbotCrew():
         return Agent(
             config=self.agents_config['TTS_Agent'], # type: ignore[index]
             verbose=True,
-            tools=[SerperDevTool()]
+            tools=[TTSTool()]
         )
 
     @task
@@ -73,9 +74,8 @@ class AiCallbotCrew():
         """Creates the AiCallbotCrew crew"""
 
         return Crew(
-            agents=self.agents, # Automatically created by the @agent decorator
-            tasks=self.tasks, # Automatically created by the @task decorator
+            agents=self.agents,
+            tasks=self.tasks,
             process=Process.sequential,
             verbose=True,
-            # process=Process.hierarchical
         )
