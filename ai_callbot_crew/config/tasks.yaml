@@ -1,13 +1,13 @@
 STT_Task:
   description: >
-    You put ON the microphone or takes input from the twilio of the phone call and convert it into text.
+    Transcribe the audio. Use STT custom tool if available.
   expected_output: >
     The text transcription of the audio.
   agent: STT_Agent
 
 LLM_task:
   description: >
-    You understands the user's question and responds to it using a powerful local LLM (Mistral) to respond to user queries with natural responses.
+    Draft a short, polite, highly motivated, professionally funny assistant reply based on the transcript: {topic} ({current_year})
   expected_output: >
     The response from the LLM.
   agent: LLM_Agent
