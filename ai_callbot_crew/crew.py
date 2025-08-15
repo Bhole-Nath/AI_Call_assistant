@@ -3,7 +3,7 @@ from crewai.project import CrewBase, agent, crew, task
 
 from typing import List
 
-from tools.custom_tools import STTTool, DataExtractorTool, TTSTool
+from tools.custom_tool import STTTool, DataExtractorTool, TTSTool
 
 @CrewBase
 class AiCallbotCrew():
@@ -12,7 +12,6 @@ class AiCallbotCrew():
     agents: List[Agent]
     tasks: List[Task]
 
-    # point to YAML
     agents_config = 'config/agents.yaml'
     tasks_config = 'config/tasks.yaml'
 

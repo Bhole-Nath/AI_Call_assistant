@@ -3,16 +3,15 @@ import speech_recognition as sr
 import json
 from crewai.tools import BaseTool
 from typing import Type
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, PrivateAttr
 
-# Import Coqui TTS and its necessary components
 from TTS.api import TTS
 
 # INPUT SCHEMAS FOR TOOLS
 
 class STTToolInput(BaseModel):
     """Input schema for the Speech-to-Text tool, now listening to the microphone."""    
-    pass
+    run: bool = Field(default=True, description="Placeholder to trigger the STT tool.")
 
 class DataExtractorToolInput(BaseModel):
     """Input schema for the Data Extraction tool."""
@@ -30,16 +29,14 @@ class STTTool(BaseTool):
     name: str = "Speech-to-Text Tool"
     description: str = (
         "A tool that transcribes live audio from the microphone into text. "
-        "Useful for converting a user's spoken words into a format the LLM can understand."
     )
     args_schema: Type[BaseModel] = STTToolInput
 
-    def _run(self) -> str:
+    def _run(self, run: bool = True) -> str:
         """
         Transcribes live audio from the microphone to text.
         
-        Returns:
-            The transcribed text as a string.
+        Returns the transcribed text as a string.
         """
         r = sr.Recognizer()
         with sr.Microphone() as source:
@@ -48,8 +45,6 @@ class STTTool(BaseTool):
             audio = r.listen(source)
         
         try:
-            # You can switch to the open-source CMU Sphinx engine by using:
-            # text = r.recognize_sphinx(audio)
             text = r.recognize_google(audio)
             print(f"Heard: {text}")
             return text
@@ -63,21 +58,21 @@ class STTTool(BaseTool):
 class DataExtractorTool(BaseTool):
     name: str = "Data Extractor Tool"
     description: str = (
-        "A tool that extracts specific data from a given text. "
-        "Useful for pulling out key information like names, phone numbers, and email addresses."
+        "A tool that extracts specific data from a given text."
     )
     args_schema: Type[BaseModel] = DataExtractorToolInput
 
     def _run(self, text_to_extract_from: str) -> str:
         """
-        Extracts specific data from the given text using regex and returns it as a JSON string.
+        Extracts specific data (phone number, email, name, appointment) from a text.
         """
         extracted_data = {}
         appointment_keywords = ["appointment", "schedule", "book", "meeting", "time to meet"]
         
         phone_match = re.search(r'(\d{3}[-.\s]??\d{3}[-.\s]??\d{4}|\(\d{3}\)\s*\d{3}[-.\s]??\d{4}|\d{10})', text_to_extract_from)
         email_match = re.search(r'[\w.+-]+@[\w-]+\.[\w.-]+', text_to_extract_from)
-        name_match = re.search(r'(?:my name is|I am|this is)\s+([A-Z][a-z]+\s+[A-Z][a-z]+)', text_to_extract_from, re.IGNORECASE)        
+        name_match = re.search(r'(?:my name is|I am|this is)\s+([A-Z][a-z]+\s+[A-Z][a-z]+)', text_to_extract_from, re.IGNORECASE)
+        
         appointment_found = any(keyword in text_to_extract_from.lower() for keyword in appointment_keywords)
 
         if phone_match:
@@ -100,19 +95,18 @@ class TTSTool(BaseTool):
         "Useful for generating a spoken response to the user."
     )
     args_schema: Type[BaseModel] = TTSToolInput
+    _tts: PrivateAttr = PrivateAttr()
 
-    def __init__(self):
-        super().__init__()
-        # Initialize Coqui TTS with a specific model
-        # You MUST download a model and provide the correct paths here
-        self.tts = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False)
+    def __init__(self, **data):
+        super().__init__(**data)
+        self._tts = TTS(model_name="tts_models/en/ljspeech/tacotron2-DDC", progress_bar=False)
 
     def _run(self, text_to_speak: str, output_path: str) -> str:
         """
         Converts the given text to speech and saves it as an audio file.
         """
         try:
-            self.tts.tts_to_file(text=text_to_speak, file_path=output_path)
+            self._tts.tts_to_file(text=text_to_speak, file_path=output_path)
             return f"Successfully generated speech for text and saved to '{output_path}'"
         except Exception as e:
             return f"An error occurred during TTS conversion: {e}"

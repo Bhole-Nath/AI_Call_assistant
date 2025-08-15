@@ -8,11 +8,6 @@ from crew import AiCallbotCrew
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
-# This main file is intended to be a way for you to run your
-# crew locally, so refrain from adding unnecessary logic into this file.
-# Replace with inputs you want to test with, it will automatically
-# interpolate any tasks and agents information
-
 def run():
     inputs = {
         'topic': 'To act as a sales executive with 15+ years experience in Telesales. You specializes in understanding the needs of the business and proposing our AI Assistant call support Software services for their business.',
@@ -63,8 +58,7 @@ def test():
         raise Exception(f"An error occurred while testing the crew: {e}")
 
 if __name__ == "__main__":
-    # usage: python main.py run|train|replay|test [args...]
     cmd = sys.argv[1] if len(sys.argv) > 1 else "run"
-    out = globals()[cmd]()  # call function by name
+    out = globals()[cmd]()
     if out is not None:
         print(out)
